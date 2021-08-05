@@ -1,0 +1,31 @@
+{
+  "name": "ldap-chpw",
+  "version": "1.0.0",
+  "description": "Be able to change passwords to users without having admin",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "NODE_EXTRA_CA_CERTS=\"$( pwd )/tls/ca.pem\" node index.js"
+  },
+  "keywords": [
+    "ldap",
+    "http"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "ImUrX <urielfontan2002@gmail.com> (https://imurx.github.io)",
+  "license": "MIT",
+  "dependencies": {
+    "koa": "^2.13.1",
+    "koa-bodyparser": "^4.3.0",
+    "koa-router": "^10.0.0",
+    "koa-session": "^6.2.0",
+    "koa-static": "^5.0.0",
+    "ldap-authentication": "^2.2.7",
+    "ldapjs": "^2.2.4"
+  },
+  "devDependencies": {
+    "eslint": "^7.26.0"
+  }
+}

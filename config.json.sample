@@ -1,0 +1,14 @@
+{
+    "servers": [],
+    "domain": "",
+    "admin": {
+        "user": "",
+        "password": ""
+    },
+    "blacklist": [],
+    "ITUsers": [],
+    "cookie": {
+        keys: [],
+        duration: 7200000
+    }
+}

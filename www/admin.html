@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administracion</title>
+</head>
+<body>
+    <p id="invalido" hidden>Las contraseñas no fueron correctamente repetidas</p>
+    <form id="change" action="/change" method="POST">
+        <label for="name">User:</label><br>
+        <input type="text" id="name" name="user" required><br><br>
+        <label for="password">Password:</label><br>
+        <input type="password" name="password" id="password" required><br><br>
+        <label for="verifypassword">Verificar password:</label><br>
+        <input type="password" name="verifypassword" id="verifypassword" required><br><br>
+        <input type="submit" value="Submit">
+    </form>
+    <script>
+        document.querySelector("#change").addEventListener("submit", ev => {
+            if(document.querySelector("#verifypassword").value !== document.querySelector("#password").value) {
+                ev.preventDefault();
+                document.querySelector("#invalido").hidden = false;
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -17,7 +17,7 @@ router.get("/", async (ctx, next) => {
 router.post("/auth", async ctx => {
     const body = ctx.request.body;
     if(!body || !body.password || !body.user) {
-        return ctx.redirect("/");
+        return ctx.redirect("/?error=Login incorrecto");
     }
     let auth = await authenticate({
         ldapOpts: {
@@ -34,7 +34,7 @@ router.post("/auth", async ctx => {
         return false;
     });
     if(!auth || !config.ITUsers.includes(auth.sAMAccountName.toLowerCase())) {
-        return ctx.redirect("/");
+        return ctx.redirect("/?error=Login incorrecto");
     }
     const key = generateKey();
     util.set(key, auth.sAMAccountName);

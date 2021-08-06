@@ -4,15 +4,27 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./index.css">
     <title>LDAP Auth</title>
 </head>
 <body>
-    <form action="/auth" method="POST">
-        <label for="name">User:</label><br>
-        <input type="text" id="name" name="user" required><br><br>
-        <label for="password">Password:</label><br>
-        <input type="password" name="password" id="password" required><br><br>
-        <input type="submit" value="Submit">
-    </form>
+    <div class="container">
+        <div class="header">
+            <img src="./logo.png" alt="Logo">
+        </div>
+        <div class="form">
+            <form action="/auth" method="POST">
+                <label for="name">Usuario:</label><br>
+                <input type="text" id="name" name="user" required><br><br>
+                <label for="password">Contraseña:</label><br>
+                <input type="password" name="password" id="password" required><br><br>
+                <input type="submit" value="Login">
+            </form>
+        </div>
+        <div class="error">
+            <div>Login Incorrecto</div>
+        </div>
+    </div>
+    <script src="./handler.js" type="module"></script>
 </body>
 </html>

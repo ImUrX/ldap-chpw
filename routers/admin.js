@@ -22,11 +22,11 @@ router.post("/change", async ctx => {
     }
     const body = ctx.request.body;
     if(!body || !body.password || !body.user) {
-        return ctx.redirect("/admin.html");
+        return ctx.redirect("/admin.html?error=Formato invalido");
     }
     if(config.blacklist.includes(body.user.toLowerCase())) {
         console.log(`${util.get(ctx.session.auth).user} le trato de cambiar la contraseña a ${body.user} (blacklist)`);
-        return ctx.redirect("/admin.html");
+        return ctx.redirect("/admin.html?error=Trataste de cambiar la contraseña de alguien que no puede tenerla cambiada.");
     }
 
     const client = ldap.createClient({
@@ -56,7 +56,7 @@ router.post("/change", async ctx => {
 
     await once(client, "finishedQuery");
     if(results.length === 0) {
-        return ctx.redirect("/admin.html");
+        return ctx.redirect("/admin.html?error=El usuario no pude ser encontrado");
     }
     client.modify(results[0].dn, [
         new ldap.Change({
@@ -73,11 +73,10 @@ router.post("/change", async ctx => {
     if(err[0]) {
         console.log(`${util.get(ctx.session.auth).user} le trato de cambiar la contraseña a ${body.user}`);
         console.error(JSON.stringify(err));
-        ctx.body = JSON.stringify(err);
+        ctx.redirect(`/admin.html?error=${encodeURIComponent(JSON.stringify(err))}`);
     } else {
         console.log(`${util.get(ctx.session.auth).user} le cambio la contraseña a ${body.user}`);
-        ctx.status = 200;
-        ctx.body = "La contraseña se ha cambiado";
+        ctx.redirect("/admin.html?info=La contraseña se ha cambiado");
     }
 });
 

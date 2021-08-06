@@ -4,25 +4,38 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administracion</title>
+    <link rel="stylesheet" href="./index.css">
+    <title>Administración LDAP</title>
 </head>
 <body>
-    <p id="invalido" hidden>Las contraseñas no fueron correctamente repetidas</p>
-    <form id="change" action="/change" method="POST">
-        <label for="name">User:</label><br>
-        <input type="text" id="name" name="user" required><br><br>
-        <label for="password">Password:</label><br>
-        <input type="password" name="password" id="password" required><br><br>
-        <label for="verifypassword">Verificar password:</label><br>
-        <input type="password" name="verifypassword" id="verifypassword" required><br><br>
-        <input type="submit" value="Submit">
-    </form>
+    <div class="container">
+        <div class="header">
+            <img src="./logo.png" alt="Logo">
+        </div>
+        <div class="form">
+            <form id="change" action="/change" method="POST">
+                <label for="name">Usuario:</label><br>
+                <input type="text" id="name" name="user" required><br><br>
+                <label for="password">Contraseña:</label><br>
+                <input type="password" name="password" id="password" required><br><br>
+                <label for="verifypassword">Verificar contraseña:</label><br>
+                <input type="password" name="verifypassword" id="verifypassword" required><br><br>
+                <input type="submit" value="Modificar">
+            </form>
+        </div>
+        <div class="error">
+            <div>Login Incorrecto</div>
+        </div>
+    </div>
+    <script src="./handler.js" type="module"></script>
     <script>
         document.querySelector("#change").addEventListener("submit", ev => {
             if(document.querySelector("#verifypassword").value !== document.querySelector("#password").value) {
                 ev.preventDefault();
-                document.querySelector("#invalido").hidden = false;
-                return;
+                const element = document.querySelector(".error, .info");
+                element.querySelector("div").textContent = "Una de las contraseñas es invalida";
+                element.classList.replace("info", "error");
+                element.style.display = "block";
             }
         });
     </script>

@@ -6,6 +6,7 @@ const { once } = require("events");
 
 const config = require("../config.json");
 const domain = config.domain.split(".");
+const ou = config.admin.ou.map(x => `ou=${x}`).reverse().join(",");
 
 const router = new Router();
 
@@ -32,7 +33,7 @@ router.post("/change", async ctx => {
     const client = ldap.createClient({
         url: config.servers
     });
-    await promisify(client.bind).call(client, `cn=${config.admin.user},ou=.ar,ou=Users,ou=Adistec,dc=${domain[0]},dc=${domain[1]}`, config.admin.password);
+    await promisify(client.bind).call(client, `cn=${config.admin.user},${ou},dc=${domain[0]},dc=${domain[1]}`, config.admin.password);
     const results = [];
     client.on("error", err => console.error(err.message));
 

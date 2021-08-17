@@ -3,7 +3,8 @@
     "domain": "",
     "admin": {
         "user": "",
-        "password": ""
+        "password": "",
+        "ou": []
     },
     "blacklist": [],
     "ITUsers": [],

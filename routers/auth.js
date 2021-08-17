@@ -3,6 +3,7 @@ const { authenticate } = require("ldap-authentication");
 const config = require("../config.json");
 const crypto = require("crypto");
 const domain = config.domain.split(".");
+const ou = config.admin.ou.map(x => `ou=${x}`).reverse().join(",");
 const util = require("./util");
 
 const router = new Router();
@@ -23,7 +24,7 @@ router.post("/auth", async ctx => {
         ldapOpts: {
             url: config.servers
         },
-        adminDn: `cn=${config.admin.user},ou=.ar,ou=Users,ou=Adistec,dc=${domain[0]},dc=${domain[1]}`,
+        adminDn: `cn=${config.admin.user},${ou},dc=${domain[0]},dc=${domain[1]}`,
         adminPassword: config.admin.password,
         userSearchBase: `dc=${domain[0]},dc=${domain[1]}`,
         userPassword: body.password,

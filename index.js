@@ -9,7 +9,9 @@ const SESSION_CONFIG = {
     maxAge: cookie.duration
 };
 
-const app = new Koa();
+const app = new Koa({
+    proxy: true
+});
 app.keys = cookie.keys;
 
 app.use(bodyparser());

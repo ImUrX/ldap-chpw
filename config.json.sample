@@ -9,7 +9,21 @@
     "blacklist": [],
     "ITUsers": [],
     "cookie": {
-        keys: [],
-        duration: 7200000
+        "keys": [],
+        "duration": 7200000
+    },
+    "smtp": {
+        "host": "",
+        "port": 465,
+        "secure": true,
+        "auth": {
+            "user": "",
+            "pass": ""
+        },
+        "mail": {
+            "from": "\"Foo\" <foo@example.com>",
+            "to": [],
+            "subject": ""
+        }
     }
 }

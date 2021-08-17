@@ -40,7 +40,7 @@ router.post("/auth", async ctx => {
     const key = generateKey();
     util.set(key, auth.sAMAccountName);
     ctx.session.auth = key;
-    console.log(`${auth.sAMAccountName} se logueo`);
+    console.log(`${auth.sAMAccountName} (${ctx.ip}) se logueo`);
     return ctx.redirect("/admin.html");
 });
 

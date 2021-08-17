@@ -2,6 +2,7 @@ const Router = require("koa-router");
 const util = require("./util");
 const { promisify } = require("util");
 const ldap = require("ldapjs");
+const nodemailer = require("nodemailer");
 const { once } = require("events");
 
 const config = require("../config.json");
@@ -26,7 +27,7 @@ router.post("/change", async ctx => {
         return ctx.redirect("/admin.html?error=Formato invalido");
     }
     if(config.blacklist.includes(body.user.toLowerCase())) {
-        console.log(`${util.get(ctx.session.auth).user} le trato de cambiar la contraseña a ${body.user} (blacklist)`);
+        console.log(`${util.get(ctx.session.auth).user} (${ctx.ip}) le trato de cambiar la contraseña a ${body.user} (blacklist)`);
         return ctx.redirect("/admin.html?error=Trataste de cambiar la contraseña de alguien que no puede tenerla cambiada.");
     }
 
@@ -72,12 +73,21 @@ router.post("/change", async ctx => {
     const err = await once(client, "finishedModify");
     client.destroy();
     if(err[0]) {
-        console.log(`${util.get(ctx.session.auth).user} le trato de cambiar la contraseña a ${body.user}`);
+        console.log(`${util.get(ctx.session.auth).user} (${ctx.ip}) le trato de cambiar la contraseña a ${body.user}`);
         console.error(JSON.stringify(err));
         ctx.redirect(`/admin.html?error=${encodeURIComponent(JSON.stringify(err))}`);
     } else {
-        console.log(`${util.get(ctx.session.auth).user} le cambio la contraseña a ${body.user}`);
+        console.log(`${util.get(ctx.session.auth).user} (${ctx.ip}) le cambio la contraseña a ${body.user}`);
         ctx.redirect("/admin.html?info=La contraseña se ha cambiado");
+        if(config.smtp.host) {
+            const transport = nodemailer.createTransport(config.smtp);
+            await transport.sendMail({
+                from: config.smtp.mail.from,
+                to: config.smtp.mail.to,
+                subject: config.smtp.mail.subject,
+                text: `${util.get(ctx.session.auth).user} (${ctx.ip}) le cambio la contraseña a ${body.user}`
+            });
+        }
     }
 });
 

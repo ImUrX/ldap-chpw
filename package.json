@@ -23,7 +23,8 @@
     "koa-session": "^6.2.0",
     "koa-static": "^5.0.0",
     "ldap-authentication": "^2.2.7",
-    "ldapjs": "^2.2.4"
+    "ldapjs": "^2.2.4",
+    "nodemailer": "^6.6.3"
   },
   "devDependencies": {
     "eslint": "^7.26.0"

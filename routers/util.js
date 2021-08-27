@@ -5,7 +5,7 @@ setInterval(() => {
     for(const [key, info] of session) {
         if(info.expire > Date.now()) continue;
         session.delete(key);
-        console.log(`deleted ${key}`);
+        console.log(`deleted ${info}`);
     }
 }, cookie.duration);
 

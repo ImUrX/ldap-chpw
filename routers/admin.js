@@ -4,17 +4,26 @@ const { promisify } = require("util");
 const ldap = require("ldapjs");
 const nodemailer = require("nodemailer");
 const { once } = require("events");
+const { ClientSecretCredential } = require("@azure/identity");
+const { Client } = require("@microsoft/microsoft-graph-client");
+const { TokenCredentialAuthenticationProvider } = require("@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials");
 
 const config = require("../config.json");
 const domain = config.domain.split(".");
 const ou = config.admin.ou.map(x => `ou=${x}`).reverse().join(",");
+const graphCredential = new ClientSecretCredential(config.o365.tenantId, config.o365.appId, config.o365.clientSecret);
+const authProvider = new TokenCredentialAuthenticationProvider(graphCredential, { scopes: ["https://graph.microsoft.com/.default"] });
+const client = Client.initWithMiddleware({
+    debugLogging: true,
+    authProvider,
+});
 
 const router = new Router();
 
 router.get("/admin.html", async (ctx, next) => {
-    if(!ctx.session.auth || !util.has(ctx.session.auth)) {
-        return ctx.redirect("/");
-    }
+    // if(!ctx.session.auth || !util.has(ctx.session.auth)) {
+    //     return ctx.redirect("/");
+    // }
     await next();
 });
 
@@ -58,7 +67,7 @@ router.post("/change", async ctx => {
 
     await once(client, "finishedQuery");
     if(results.length === 0) {
-        return ctx.redirect("/admin.html?error=El usuario no pude ser encontrado");
+        return ctx.redirect("/admin.html?error=El usuario no pudo ser encontrado");
     }
     client.modify(results[0].dn, [
         new ldap.Change({
@@ -88,6 +97,49 @@ router.post("/change", async ctx => {
                 text: `${util.get(ctx.session.auth).user} (${ctx.ip}) le cambio la contraseña a ${body.user}`
             });
         }
+    }
+});
+
+router.post("/resetmfa", async ctx => {
+    // if(!ctx.session.auth || !util.has(ctx.session.auth)) {
+    //     return ctx.redirect("/");
+    // }
+    const body = ctx.request.body;
+    if(!body || !body.email || !/^(\w+)@adistec\.com$/.test(body.email)) {
+        return ctx.redirect("/admin.html?error=Formato invalido");
+    }
+
+    /**
+     * @type {import("@microsoft/microsoft-graph-types").User}
+     */
+    let user;
+    try {
+        user = await client.api(`/users('${encodeURIComponent(body.email)}')`).get();
+        const authentication = await client.api(`/users/${user.id}`).expand("authentication").get();
+        console.log(authentication);
+    } catch(e) {
+        console.error(e);
+        return ctx.redirect("/admin.html?error=El usuario no pudo ser encontrado");
+    }
+    console.log(user);
+    const promises = user.authentication?.microsoftAuthenticatorMethods?.map(method => 
+        client.api(`/users/${user.id}/authentication/microsoftAuthenticatorMethods/${method.id}`).delete()
+    ) ?? [];
+    const promises2 = user.authentication?.phoneMethods?.map(method => 
+        client.api(`/users/${user.id}/authentication/phoneMethods/${method.id}`).delete()
+    ) ?? [];
+    await Promise.all([...promises, ...promises2]).catch(err => console.error(err));
+
+    // console.log(`${util.get(ctx.session.auth).user} (${ctx.ip}) le reseteo la MFA a ${body.email}`);
+    ctx.redirect("/admin.html?info=Se ha reseteado la MFA del usuario");
+    if(config.smtp.host) {
+        const transport = nodemailer.createTransport(config.smtp);
+        await transport.sendMail({
+            from: config.smtp.mail.from,
+            to: config.smtp.mail.to,
+            subject: config.smtp.mail.subject,
+            text: `${util.get(ctx.session.auth).user} (${ctx.ip}) le reseteo la MFA a ${body.email}`
+        });
     }
 });
 

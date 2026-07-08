@@ -25,5 +25,10 @@
             "to": [],
             "subject": ""
         }
+    },
+    "o365": {
+        "appId": "",
+        "tenantId": "",
+        "clientSecret": ""
     }
 }

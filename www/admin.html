@@ -23,6 +23,13 @@
                 <input type="submit" value="Modificar">
             </form>
         </div>
+        <div class="form">
+            <form id="resetmfa" action="/resetmfa" method="POST">
+                <label for="email">E-mail:</label><br>
+                <input type="email" id="email" name="email" required><br><br>
+                <input type="submit" value="Resetear MFA">
+            </form>
+        </div>
         <div class="error">
             <div>Login Incorrecto</div>
         </div>

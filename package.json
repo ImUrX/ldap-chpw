@@ -12,21 +12,24 @@
     "http"
   ],
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=22.0.0"
   },
   "author": "ImUrX <urielfontan2002@gmail.com> (https://imurx.github.io)",
   "license": "MIT",
   "dependencies": {
+    "@azure/identity": "^4.13.1",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-router": "^10.0.0",
-    "koa-session": "^6.2.0",
+    "koa-session": "^7.0.2",
     "koa-static": "^5.0.0",
-    "ldap-authentication": "^2.2.7",
+    "ldap-authentication": "^4.0.4",
     "ldapjs": "^2.2.4",
-    "nodemailer": "^6.6.3"
+    "nodemailer": "^9.0.1"
   },
   "devDependencies": {
+    "@microsoft/microsoft-graph-types": "^2.43.1",
     "eslint": "^7.26.0"
   }
 }

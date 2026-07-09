@@ -15,7 +15,7 @@ const app = new Koa({
 app.keys = cookie.keys;
 
 app.use(bodyparser());
-// app.use(session.default(SESSION_CONFIG, app));
+app.use(session.default(SESSION_CONFIG, app));
 app.use(statics("./www/", {
     defer: true
 }));

@@ -21,9 +21,9 @@ const client = Client.initWithMiddleware({
 const router = new Router();
 
 router.get("/admin.html", async (ctx, next) => {
-    // if(!ctx.session.auth || !util.has(ctx.session.auth)) {
-    //     return ctx.redirect("/");
-    // }
+    if(!ctx.session.auth || !util.has(ctx.session.auth)) {
+        return ctx.redirect("/");
+    }
     await next();
 });
 
@@ -101,36 +101,41 @@ router.post("/change", async ctx => {
 });
 
 router.post("/resetmfa", async ctx => {
-    // if(!ctx.session.auth || !util.has(ctx.session.auth)) {
-    //     return ctx.redirect("/");
-    // }
+    if(!ctx.session.auth || !util.has(ctx.session.auth)) {
+        return ctx.redirect("/");
+    }
     const body = ctx.request.body;
     if(!body || !body.email || !/^(\w+)@adistec\.com$/.test(body.email)) {
         return ctx.redirect("/admin.html?error=Formato invalido");
     }
 
     /**
-     * @type {import("@microsoft/microsoft-graph-types").User}
+     * @type {{value: import("@microsoft/microsoft-graph-types").PhoneAuthenticationMethod[] | undefined }}
      */
-    let user;
+    let phoneMethods;
+    /**
+     * @type {{value: import("@microsoft/microsoft-graph-types").MicrosoftAuthenticatorAuthenticationMethod[] | undefined }}
+     */
+    let authMethods;
     try {
-        user = await client.api(`/users('${encodeURIComponent(body.email)}')`).get();
-        const authentication = await client.api(`/users/${user.id}`).expand("authentication").get();
-        console.log(authentication);
+        phoneMethods = await client.api(`/users('${encodeURIComponent(body.email)}')/authentication/phoneMethods`).get();
+        authMethods = await client.api(`/users('${encodeURIComponent(body.email)}')/authentication/microsoftAuthenticatorMethods`).get();
     } catch(e) {
         console.error(e);
         return ctx.redirect("/admin.html?error=El usuario no pudo ser encontrado");
     }
-    console.log(user);
-    const promises = user.authentication?.microsoftAuthenticatorMethods?.map(method => 
-        client.api(`/users/${user.id}/authentication/microsoftAuthenticatorMethods/${method.id}`).delete()
+    const promises = authMethods?.value?.map(method => 
+        client.api(`/users('${encodeURIComponent(body.email)}')/authentication/microsoftAuthenticatorMethods/${method.id}`).delete()
     ) ?? [];
-    const promises2 = user.authentication?.phoneMethods?.map(method => 
-        client.api(`/users/${user.id}/authentication/phoneMethods/${method.id}`).delete()
+    const promises2 = phoneMethods?.value?.map(method => 
+        client.api(`/users('${encodeURIComponent(body.email)}')/authentication/phoneMethods/${method.id}`).delete()
     ) ?? [];
+    if(promises.length === 0 && promises2.length === 0) {
+        return ctx.redirect("/admin.html?info=El usuario no tiene MFA configurada");
+    }
     await Promise.all([...promises, ...promises2]).catch(err => console.error(err));
 
-    // console.log(`${util.get(ctx.session.auth).user} (${ctx.ip}) le reseteo la MFA a ${body.email}`);
+    console.log(`${util.get(ctx.session.auth).user} (${ctx.ip}) le reseteo la MFA a ${body.email}`);
     ctx.redirect("/admin.html?info=Se ha reseteado la MFA del usuario");
     if(config.smtp.host) {
         const transport = nodemailer.createTransport(config.smtp);

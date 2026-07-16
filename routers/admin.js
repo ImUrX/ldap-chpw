@@ -105,7 +105,7 @@ router.post("/resetmfa", async ctx => {
         return ctx.redirect("/");
     }
     const body = ctx.request.body;
-    if(!body || !body.email || !/^(\w+)@adistec\.com$/.test(body.email)) {
+    if(!body || !body.email || !/^([a-zA-Z_.]+)@adistec\.com$/.test(body.email)) {
         return ctx.redirect("/admin.html?error=Formato invalido");
     }
 

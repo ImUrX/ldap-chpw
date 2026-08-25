@@ -20,9 +20,10 @@ router.post("/auth", async ctx => {
     if(!body || !body.password || !body.user) {
         return ctx.redirect("/?error=Login incorrecto");
     }
+    const index = Math.floor(Math.random() * config.servers.length);
     let auth = await authenticate({
         ldapOpts: {
-            url: config.servers
+            url: config.servers[index]
         },
         adminDn: `cn=${config.admin.user},${ou},dc=${domain[0]},dc=${domain[1]}`,
         adminPassword: config.admin.password,

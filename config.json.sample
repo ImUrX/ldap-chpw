@@ -27,6 +27,7 @@
         }
     },
     "o365": {
+        "blacklist": [],
         "appId": "",
         "tenantId": "",
         "clientSecret": ""

@@ -108,6 +108,10 @@ router.post("/resetmfa", async ctx => {
     if(!body || !body.email || !/^([a-zA-Z_.]+)@adistec\.com$/.test(body.email)) {
         return ctx.redirect("/admin.html?error=Formato invalido");
     }
+    if(config.o365.blacklist.includes(body.email.toLowerCase())) {
+        console.log(`${util.get(ctx.session.auth).user} (${ctx.ip}) le trato de cambiar la contraseña a ${body.email} (blacklist)`);
+        return ctx.redirect("/admin.html?error=Trataste de reiniciar el MFA de alguien que no se puede.");
+    }
 
     /**
      * @type {{value: import("@microsoft/microsoft-graph-types").PhoneAuthenticationMethod[] | undefined }}
@@ -124,16 +128,17 @@ router.post("/resetmfa", async ctx => {
         console.error(e);
         return ctx.redirect("/admin.html?error=El usuario no pudo ser encontrado");
     }
-    const promises = authMethods?.value?.map(method => 
-        client.api(`/users('${encodeURIComponent(body.email)}')/authentication/microsoftAuthenticatorMethods/${method.id}`).delete()
-    ) ?? [];
     const promises2 = phoneMethods?.value?.map(method => 
         client.api(`/users('${encodeURIComponent(body.email)}')/authentication/phoneMethods/${method.id}`).delete()
+    ) ?? [];
+    await Promise.all(promises2);
+    const promises = authMethods?.value?.map(method => 
+        client.api(`/users('${encodeURIComponent(body.email)}')/authentication/microsoftAuthenticatorMethods/${method.id}`).delete()
     ) ?? [];
     if(promises.length === 0 && promises2.length === 0) {
         return ctx.redirect("/admin.html?info=El usuario no tiene MFA configurada");
     }
-    await Promise.all([...promises, ...promises2]).catch(err => console.error(err));
+    await Promise.all(promises).catch(err => console.error(err));
 
     console.log(`${util.get(ctx.session.auth).user} (${ctx.ip}) le reseteo la MFA a ${body.email}`);
     ctx.redirect("/admin.html?info=Se ha reseteado la MFA del usuario");

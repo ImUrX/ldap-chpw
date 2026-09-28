@@ -128,17 +128,23 @@ router.post("/resetmfa", async ctx => {
         console.error(e);
         return ctx.redirect("/admin.html?error=El usuario no pudo ser encontrado");
     }
-    const promises2 = phoneMethods?.value?.map(method => 
-        client.api(`/users('${encodeURIComponent(body.email)}')/authentication/phoneMethods/${method.id}`).delete()
-    ) ?? [];
-    await Promise.all(promises2);
-    const promises = authMethods?.value?.map(method => 
-        client.api(`/users('${encodeURIComponent(body.email)}')/authentication/microsoftAuthenticatorMethods/${method.id}`).delete()
-    ) ?? [];
-    if(promises.length === 0 && promises2.length === 0) {
+
+    const queue = [
+        ...(phoneMethods?.value?.map(method => ({id: method.id, method: "phoneMethods" })) ?? []),
+        ...(authMethods?.value?.map(method => ({id: method.id, method: "microsoftAuthenticatorMethods" })) ?? [])
+    ];
+    if(queue.length === 0) {
         return ctx.redirect("/admin.html?info=El usuario no tiene MFA configurada");
     }
-    await Promise.all(promises).catch(err => console.error(err));
+    while(queue.length > 0) {
+        const method = queue.shift();
+        try {
+            await client.api(`/users('${encodeURIComponent(body.email)}')/authentication/${method.method}/${method.id}`).delete();
+        } catch(e) {
+            console.error("Borrar metodo fallo, pusheando al final del queue", e);
+            queue.push(method);
+        }
+    }
 
     console.log(`${util.get(ctx.session.auth).user} (${ctx.ip}) le reseteo la MFA a ${body.email}`);
     ctx.redirect("/admin.html?info=Se ha reseteado la MFA del usuario");
